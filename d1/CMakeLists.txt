@@ -23,6 +23,28 @@ if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format-truncation -Wno-format-overflow")
 endif()
 
+#[ISB] add neptune hogdir tool and hog compiler. 
+function(add_hog_file HOG_NAME HOG_SRC_DIR)
+	string( REPLACE "." "_" HOG_TARGET ${HOG_NAME} )
+	
+	#message(${HOG_SRC_DIR})
+	
+	#Iterate all the files in the hog source dir, for usage in a target.
+	file(GLOB_RECURSE HOG_SOURCES ${HOG_SRC_DIR}/*)
+	
+	#Create the command that actually invokes hogdir to build the hogfile.
+	add_custom_command( OUTPUT ${CMAKE_BINARY_DIR}/${HOG_NAME}
+		COMMAND hogdir ${CMAKE_BINARY_DIR}/${HOG_NAME} ${HOG_SRC_DIR}
+		DEPENDS hogdir )
+		
+	#Create the target that uses this command to build the hogfile.
+	#From GZDoom: Touch the hogdir binary to ensure that this rule always rebuilds
+	add_custom_target( ${HOG_TARGET} ALL
+		COMMAND ${CMAKE_COMMAND} -E touch $<TARGET_FILE:hogdir>
+		DEPENDS ${CMAKE_BINARY_DIR}/${HOG_NAME}
+		SOURCES ${HOG_SOURCES})
+endfunction()
+
 # Global compile flags (have to be processed before subdirectories by some
 #  CMake implementations - even though the docs say they don't)
 add_definitions(/DNETWORK)
@@ -128,3 +150,9 @@ if(EDITOR)
     add_subdirectory(ui)
     add_dependencies(d1x-redux editor ui)
 endif()
+
+#[ISB] this is out of directory, so a binary dir needs to be specified, but this shouldn't be CMAKE_CURRENT_SOURCE_DIR, because it'll dump stuff into the src directory which is no good
+#I'm not sure if there's a more ideal solution for this, so for now I'll stuff it into ${CMAKE_BINARY_DIR}/hogdir"
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../common/hogdir" "${CMAKE_BINARY_DIR}/hogdir")
+
+add_hog_file(d1ap.hog ${CMAKE_CURRENT_SOURCE_DIR}/d1aphog)
