@@ -62,7 +62,11 @@ void print_exit_message(const char *exit_message)
 }
 
 //terminates with error code 1, printing message
-void Error(const char *fmt,...)
+#ifdef WIN32
+__declspec("noreturn") void Error(const char *fmt,...)
+#else
+void Error(const char* fmt, ...)
+#endif
 {
 	char exit_message[MAX_MSG_LEN]="Error: "; // don't put the new line in for dialog output
 	va_list arglist;
