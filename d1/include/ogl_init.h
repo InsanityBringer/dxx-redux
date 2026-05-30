@@ -81,6 +81,10 @@ extern GLfloat ogl_maxanisotropy;
 
 void ogl_setActiveTexture(int t);
 
+//[ISB] Call right after SDL_Init to get the best video mode.
+//This will be used for all fullscreen modes. 
+void ogl_get_best_mode();
+
 int ogl_init_window(int x, int y);//create a window/switch modes/etc
 
 #define OGL_FLAG_MIPMAP (1 << 0)

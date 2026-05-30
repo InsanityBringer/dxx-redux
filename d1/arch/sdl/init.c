@@ -11,6 +11,7 @@
 #include "text.h"
 #include "args.h"
 #include "config.h"
+#include "ogl_init.h"
 
 void arch_close(void)
 {
@@ -40,6 +41,8 @@ void arch_init(void)
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 		Error("SDL library initialisation failed: %s.",SDL_GetError());
+
+	ogl_get_best_mode();
 
 	key_init();
 

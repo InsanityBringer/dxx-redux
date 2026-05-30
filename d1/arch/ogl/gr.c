@@ -84,6 +84,9 @@ int gr_installed = 0;
 int gl_initialized=0;
 int linedotscale=1; // scalar of glLinewidth and glPointSize - only calculated once when resolution changes
 int sdl_no_modeswitch=0;
+int sdl_defaultbpp = 32;
+int sdl_defaultwidth, sdl_defaultheight;
+
 
 #ifdef OGLES
 EGLDisplay eglDisplay=EGL_NO_DISPLAY;
@@ -283,6 +286,19 @@ void ogles_destroy(void)
 }
 #endif
 
+void ogl_get_best_mode()
+{
+	//The result of SDL_GetVideoInfo is a pointer that is reused to describe the current mode,
+	//not just the mode at the time of call. To ensure this stays static, copy the traits of the best mode to my variables.
+	const SDL_VideoInfo* blarg = SDL_GetVideoInfo();
+	if (!blarg)
+		Error("ogl_get_best_mode: SDL_GetVideoInfo failed!");
+
+	sdl_defaultwidth = blarg->current_w;
+	sdl_defaultheight = blarg->current_h;
+	sdl_defaultbpp = blarg->vfmt->BitsPerPixel;
+}
+
 int ogl_init_window(int x, int y)
 {
 	int use_x,use_y,use_bpp;
@@ -332,6 +348,13 @@ int ogl_init_window(int x, int y)
 		} else {
 			con_printf(CON_URGENT, "Could not query video info\n");
 		}
+	}
+	else if (use_flags & SDL_FULLSCREEN)
+	{
+		//Only ever go fullscreen in the "best" mode
+		use_x = sdl_defaultwidth;
+		use_y = sdl_defaultheight;
+		use_bpp = sdl_defaultbpp;
 	}
 
 	if (!SDL_SetVideoMode(use_x, use_y, use_bpp, use_flags))
@@ -448,14 +471,26 @@ int gr_toggle_fullscreen(void)
 	if (gl_initialized)
 	{
 		if (sdl_no_modeswitch == 0) {
-			if (!SDL_VideoModeOK(SM_W(Game_screen_mode), SM_H(Game_screen_mode), GameArg.DbgBpp, sdl_video_flags))
+			int use_x = SM_W(Game_screen_mode);
+			int use_y = SM_H(Game_screen_mode);
+			int use_bpp = GameArg.DbgBpp;
+
+			if (sdl_video_flags & SDL_FULLSCREEN)
 			{
-				con_printf(CON_URGENT,"Cannot set %ix%i. Fallback to 640x480\n",SM_W(Game_screen_mode), SM_H(Game_screen_mode));
-				Game_screen_mode=SM(640,480);
+				//Only ever go fullscreen in the "best" mode
+				use_x = sdl_defaultwidth;
+				use_y = sdl_defaultheight;
+				use_bpp = sdl_defaultbpp;
 			}
-			if (!SDL_SetVideoMode(SM_W(Game_screen_mode), SM_H(Game_screen_mode), GameArg.DbgBpp, sdl_video_flags))
+
+			if (!SDL_VideoModeOK(use_x, use_y, use_bpp, sdl_video_flags))
 			{
-				Error("Could not set %dx%dx%d opengl video mode: %s\n", SM_W(Game_screen_mode), SM_H(Game_screen_mode), GameArg.DbgBpp, SDL_GetError());
+				//[ISB] fatal error now, if you can't set the best mode something is seriously wrong. 
+				Error("Could not set %dx%dx%d opengl video mode: %s\n", use_x, use_y, use_bpp, SDL_GetError());
+			}
+			if (!SDL_SetVideoMode(use_x, use_y, use_bpp, sdl_video_flags))
+			{
+				Error("Could not set %dx%dx%d opengl video mode: %s\n", use_x, use_y, use_bpp, SDL_GetError());
 			}
 		}
 #ifdef RPI
