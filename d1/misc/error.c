@@ -63,7 +63,7 @@ void print_exit_message(const char *exit_message)
 
 //terminates with error code 1, printing message
 #ifdef WIN32
-__declspec("noreturn") void Error(const char *fmt,...)
+__declspec(noreturn) void Error(const char *fmt,...)
 #else
 void Error(const char* fmt, ...)
 #endif

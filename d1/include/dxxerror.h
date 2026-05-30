@@ -37,7 +37,7 @@ void Warning(char *fmt,...);				//print out warning message to user
 void set_warn_func(void (*f)(char *s));//specifies the function to call with warning messages
 void clear_warn_func(void (*f)(char *s));//say this function no longer valid
 #ifdef WIN32
-__declspec("noreturn") void Error(const char* fmt, ...);
+__declspec(noreturn) void Error(const char* fmt, ...);
 #else
 void Error(const char* fmt, ...) __noreturn __attribute_gcc_format((printf, 1, 2));				//exit with error code=1, print message
 #endif
