@@ -330,7 +330,7 @@ int main(int argc, char *argv[])
 	if (!PHYSFSX_checkSupportedArchiveTypes())
 		return(0);
 
-	if (! PHYSFSX_contfile_init("descent.hog", 1)) {
+	if (!PHYSFSX_addRelToSearchPath("descent.hog", 1)) {
 		char path[PATH_MAX];
 		snprintf(path, sizeof(path), "%s", PHYSFS_getWriteDir());
 		size_t len = strlen(path);
@@ -365,6 +365,12 @@ int main(int argc, char *argv[])
 		DXX_HOGFILE_APPLICATION_BUNDLE	\
 		"Or use the -hogdir option to specify an alternate location."
 		Error(DXX_MISSING_HOGFILE_ERROR_TEXT, path);
+	}
+
+	//[ISB] Add d1ap.hog
+	if (!PHYSFSX_addRelToSearchPath("d1ap.hog", 1))
+	{
+		Error("Unable to locate included d1ap.hog");
 	}
 
 	switch (PHYSFSX_fsize("descent.hog"))

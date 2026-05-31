@@ -65,9 +65,12 @@ add_executable (d1x-redux
     vclip.c
     wall.c
     weapon.c
+	worldmap.c
     )
 
 include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/arch/include)
+
+add_dependencies(d1x-redux d1ap_hog)
 
 target_compile_definitions(d1x-redux PUBLIC
     DXX_VERSION_MAJORi=${PROJECT_VERSION_MAJOR}
@@ -189,3 +192,6 @@ if(SDLMIXER AND MSVC AND NOT VCPKG_PREFIX STREQUAL "")
                 $<TARGET_FILE_DIR:d1x-redux>)
     endforeach(name)
 endif()
+
+#Add command for copying the hogfile into the output dir, so D1X-Redux can see it. 
+add_custom_command(TARGET d1x-redux POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECT_BINARY_DIR}/d1ap.hog" $<TARGET_FILE_DIR:d1x-redux>)

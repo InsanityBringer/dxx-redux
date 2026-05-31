@@ -836,6 +836,25 @@ int select_mission(int anarchy_mode, char *message, int (*when_selected)(void))
     return 1;	// presume success
 }
 
+void select_default_mission()
+{
+	//[ISB] This isn't variable length. It basically always needs to be present. Why is it dynamically allocated?
+	if (!Current_mission)
+	{
+		Current_mission = d_malloc(sizeof(Mission));
+		memset(Current_mission, 0, sizeof(*Current_mission));
+		//dxx will always try to free this and mem.c doesn't like that so
+		Current_mission->filename = d_strdup(D1_MISSION_FILENAME);
+		strcpy(Current_mission->mission_name, D1_MISSION_NAME);
+
+	}
+	int res = load_mission_d1();
+	if (!res)
+	{
+		Error("select_default_mission: failed to load Descent 1 builtin mission!");
+	}
+}
+
 #ifdef EDITOR
 void create_new_mission(void)
 {

@@ -96,6 +96,10 @@ int select_mission (int anarchy_mode, char *message, int (*when_selected)(void))
 
 void free_mission(void);
 
+//[ISB] blarg, no easy way of doing this in D1X for whatever reason.
+//Selects the default mission, the only one supported for 
+void select_default_mission();
+
 #ifdef EDITOR
 void create_new_mission(void);
 #endif

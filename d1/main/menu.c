@@ -76,6 +76,8 @@ COPYRIGHT 1993-1998 PARALLAX SOFTWARE CORPORATION.  ALL RIGHTS RESERVED.
 #include "ogl_init.h"
 #endif
 
+#include "worldmap.h"
+
 
 // Menu IDs...
 enum MENUS
@@ -536,7 +538,9 @@ int do_option ( int select)
 {
 	switch (select) {
 		case MENU_NEW_GAME:
-			select_mission(0, "New Game\n\nSelect mission", do_new_game_menu);
+			//select_mission(0, "New Game\n\nSelect mission", do_new_game_menu);
+			select_default_mission(); //Default mission is the only one supported
+			do_new_game_menu();
 			break;
 		case MENU_GAME:
 			break;
@@ -768,9 +772,8 @@ int do_difficulty_menu()
 
 int do_new_game_menu()
 {
-	int new_level_num,player_highest_level;
-
-	new_level_num = 1;
+	int new_level_num = 1;
+	/*int player_highest_level;
 #ifdef NDEBUG
 	player_highest_level = get_highest_level();
 
@@ -810,14 +813,16 @@ int do_new_game_menu()
 			else
 				valid = 1;
 		}
-	}
+	}*/
 
 	Difficulty_level = PlayerCfg.DefaultDifficulty;
 
 	if (!do_difficulty_menu())
 		return 0;
 
-	StartNewGame(new_level_num);
+	//[ISB] show the level picker
+	do_world_map();
+	//StartNewGame(new_level_num);
 
 	return 1;	// exit mission listbox
 }
