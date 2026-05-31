@@ -27,6 +27,7 @@ static int ease(int a, int b, float time)
 {
 	float timesq = time * time;
 	return (int)(a + (b - a) * (3 * timesq - 2 * timesq * time));
+	//return (int)(a + (b - a) * time);
 }
 
 typedef struct {
@@ -45,6 +46,7 @@ typedef enum
 typedef enum
 {
 	ICON_CURSOR,
+	ICON_LOCATION,
 	NUMICONS
 } icon_e;
 
@@ -80,7 +82,7 @@ mapentry_t mapentries[] = {
 	{ 26, 2, 267, 108, "Pluto Military Base" },
 	{ 27, 2, 296, 98, "Charon Volatile Mine" } };
 
-#define NUM_MAP_ENTRIES (sizeof(mapentries) / sizeof(mapentries[0]));
+#define NUM_MAP_ENTRIES (sizeof(mapentries) / sizeof(mapentries[0]))
 
 typedef struct worldmap_s
 {
@@ -141,6 +143,31 @@ void worldmap_draw(worldmap_t* self)
 		}
 	}
 
+	//Draw the map positions
+	memcpy(gr_palette, self->iconpals[ICON_LOCATION], sizeof(gr_palette));
+	gr_palette_load(gr_palette);
+	if (self->transitiontime == 0 || self->bg == self->oldbg)
+	{
+		for (int i = 0; i < NUM_MAP_ENTRIES; i++)
+		{
+			mapentry_t* entry = &mapentries[i];
+			if (entry->map == self->bg)
+			{
+				draw_icon(&self->iconpics[ICON_LOCATION], entry->x - 8, entry->y - 8, scale);
+			}
+		}
+	}
+	else
+	{
+		float frac = 1.f - self->transitiontime / TRANSITION_TIME;
+		int xoffset = ease(self->oldbg * 320, self->bg * 320, frac);
+		for (int i = 0; i < NUM_MAP_ENTRIES; i++)
+		{
+			mapentry_t* entry = &mapentries[i];
+			draw_icon(&self->iconpics[ICON_LOCATION], (entry->x - 8 + entry->map * 320) - xoffset, entry->y - 8, scale);
+		}
+	}
+
 	//Draw the cursor in screen-space
 	int cursorx = mapentries[self->index].x;
 	int cursory = mapentries[self->index].y;
@@ -156,6 +183,10 @@ void worldmap_draw(worldmap_t* self)
 	gr_palette_load(gr_palette);
 
 	draw_icon(&self->iconpics[ICON_CURSOR], cursorx - 10, cursory - 10, scale);
+
+	//Draw the currently selected level name
+	gr_set_curfont(MEDIUM1_FONT);
+	gr_string(0x8000, 4 * scale, mapentries[self->index].name);
 
 	grd_curcanv = old_canv;
 	gr_free_sub_canvas(sub_canv);
@@ -259,7 +290,7 @@ int worldmap_handler(struct window* wind, d_event* event, void* data)
 }
 
 static const char* bgfilenames[NUMBGS] = { "map01.pcx", "map02.pcx", "map03.pcx" };
-static const char* iconfilenames[NUMICONS] = { "mapcur.pcx" };
+static const char* iconfilenames[NUMICONS] = { "mapcur.pcx", "maploc.pcx" };
 
 void worldmap_init(worldmap_t* self, grs_canvas* canv)
 {
